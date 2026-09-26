@@ -83,8 +83,8 @@ Alta autoservicio, planes y suscripciones, landing, pagos online (Bancard / Pago
 
 ## 9. Estado
 
-### Sprint 0 — completado en local (26/09/2026), pendiente de push
-Repos creados localmente con git (nombres en clave hasta definir el producto):
+### Sprint 0 — completado y subido (26/09/2026)
+Repos en GitHub (nombres en clave hasta definir el producto): `aldorodrigo/academia-api` y `aldorodrigo/academia-app` (rama `main`).
 
 - **`academia-api`** (Laravel 13.33, PHP 8.5 en Sail/CI/producción):
   - Sail con MariaDB 11.8, Redis 8 (AOF) y Mailpit; colas y caché en Redis; sesiones en MariaDB.
