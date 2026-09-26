@@ -146,7 +146,7 @@ Una misma persona puede tener varios roles (ej.: un papá que es tesorero y adem
 - Auditoría: quién creó/modificó/anuló cada registro (clave en finanzas).
 - Adjuntos en cualquier entidad.
 - Búsqueda global.
-- Multi-idioma (español primero).
+- Solo en español (sin sistema de traducciones).
 
 ---
 
@@ -248,7 +248,7 @@ Club ─┬─ Temporada, ConfiguracionMora
 ### 8.1 Guaraníes
 - Montos como **enteros** (el guaraní no usa decimales): `150000` → se muestra `₲ 150.000`.
 - Redondeos de descuentos y recargos al guaraní entero (configurable: a 500 o 1.000).
-- Zona horaria `America/Asuncion`, idioma español (Paraguay).
+- Zona horaria `America/Asuncion`. La aplicación es **solo en español**, sin traducciones.
 - Pagos online (fase 4): **Bancard** (vPOS / QR) y/o **Pagopar**. Transferencias y giros (Tigo Money, Personal) como pago manual con comprobante.
 - Comprobantes: el club emite **recibos internos**. La factura electrónica (SIFEN) queda como opción futura.
 

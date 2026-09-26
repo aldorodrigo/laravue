@@ -1,7 +1,7 @@
 # Plan del Proyecto — SaaS para Academias, Clubes y Escuelas
 
 > **Nombre:** pendiente (`{producto}`). Finalistas: Crecemy, Cantemy, Nidemy, Cluppy, Crecy, Retoño, Acompaño.
-> **Piloto:** Club Jakare (fútbol infantil, Paraguay). Moneda ₲ · `America/Asuncion` · español.
+> **Piloto:** Club Jakare (fútbol infantil, Paraguay). Moneda ₲ · `America/Asuncion` · **solo español, sin sistema de traducciones**.
 > Funcionalidades y lógica de negocio en detalle: `docs/PLAN_JAKARE.md`.
 
 ---
@@ -11,7 +11,8 @@ SaaS multi-organización para academias, clubes, escuelas de formación y comisi
 - **Roles:** comisión (presidente, vice, secretario, tesorero, vocales, síndico — un rol por cargo, con mandato), admin, instructor, padre/tutor, alumno adulto.
 - **Núcleo:** alumnos, familias, programas, grupos, horarios, asistencia, inscripciones, tarifas, cuotas, becas, mora, cobros, gastos, cuentas, avisos push, eventos, informes.
 - **Módulos opcionales (feature flags):** comisión/actas/resoluciones, rifas, indumentaria, torneos, evaluaciones, SIFEN.
-- **Vocabulario configurable** (Grupo = "Categoría" / "Nivel" / "Curso").
+- **Vocabulario configurable** (Grupo = "Categoría" / "Nivel" / "Curso"): son etiquetas por organización, no traducciones.
+- **Idioma:** solo español en el panel, la API y la app. Los textos se escriben directamente en español; no hay archivos de traducción propios (solo `lang/es` con los mensajes del framework: validación, login, contraseñas).
 - **Fuera de alcance:** gestión académica de colegios formales.
 
 ## 2. Reglas de negocio clave
@@ -69,7 +70,7 @@ Alta autoservicio, planes y suscripciones, landing, pagos online (Bancard / Pago
 - Cuentas: Firebase, Google Play (USD 25), Apple Developer (USD 99/año), S3, dominio.
 
 ## 7. Decisiones
-✅ Paraguay/₲ · ✅ cuenta por jugador + familia · ✅ cuota por grupo, multi-disciplina · ✅ descuentos/becas/mora configurables · ✅ un rol por cargo con mandato · ✅ Laravel 13 + Filament 5 + Flutter 3.47 · ✅ MariaDB 11.8 en todos lados · ✅ Redis + Horizon desde el inicio · ✅ Pest 5 · ✅ dos repos nuevos.
+✅ Paraguay/₲ · ✅ cuenta por jugador + familia · ✅ cuota por grupo, multi-disciplina · ✅ descuentos/becas/mora configurables · ✅ un rol por cargo con mandato · ✅ Laravel 13 + Filament 5 + Flutter 3.47 · ✅ MariaDB 11.8 en todos lados · ✅ Redis + Horizon desde el inicio · ✅ Pest 5 · ✅ dos repos nuevos · ✅ solo español, sin traducciones.
 ⏳ Nombre del producto · ⏳ hosting (¿mismo servidor que OpenSciRank?) · ⏳ datos de Jakare (jugadores, categorías, técnicos, pago de cancha).
 
 ## 8. Próximos pasos
