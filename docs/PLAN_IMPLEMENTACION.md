@@ -78,3 +78,30 @@ Alta autoservicio, planes y suscripciones, landing, pagos online (Bancard / Pago
 2. Elegir nombre o usar uno provisorio.
 3. Crear los dos repos en GitHub (usuario, o dar acceso).
 4. Arrancar Sprint 0.
+
+---
+
+## 9. Estado
+
+### Sprint 0 — completado en local (26/09/2026), pendiente de push
+Repos creados localmente con git (nombres en clave hasta definir el producto):
+
+- **`academia-api`** (Laravel 13.33, PHP 8.5 en Sail/CI/producción):
+  - Sail con MariaDB 11.8, Redis 8 (AOF) y Mailpit; colas y caché en Redis; sesiones en MariaDB.
+  - Filament 5.9 con tenancy por organización (`/admin/{slug}`), Shield con teams, Horizon (solo super admin).
+  - Base de tenancy: `Organization`, `Membership`, trait `BelongsToOrganization` + `CurrentOrganization`.
+  - API v1 con Sanctum: `POST/DELETE auth/token`, `GET me`, `GET organization` (header `X-Organization`).
+  - `Money` (guaraníes enteros), temporadas (`Season`) como primer modelo de dominio.
+  - Solo español: locale fijo, `lang/es` solo con mensajes del framework.
+  - Pest 5: 27 tests (arch test de tenancy, aislamiento, API, panel) contra MariaDB y Redis reales.
+  - CI (GitHub Actions) con servicios MariaDB 11.8 + Redis 8; Pint.
+  - Docker de producción: PHP-FPM, Caddy (HTTPS), MariaDB, Redis AOF, Horizon, scheduler.
+  - `CLAUDE.md`, `business-logic.md`, `README.md`.
+- **`academia-app`** (Flutter 3.47.5):
+  - Riverpod 3, go_router, dio, almacenamiento seguro del token y la organización.
+  - Login → selección de organización → inicio, probado de punta a punta contra la API.
+  - Solo español. 7 tests, `flutter analyze` sin problemas, CI.
+
+Pendiente de verificar: build de la imagen Docker de producción (Docker Hub limitó las descargas en el entorno de desarrollo).
+
+### Próximo: Sprint 1 — organizaciones y roles
