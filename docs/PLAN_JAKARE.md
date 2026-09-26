@@ -9,16 +9,19 @@ Una plataforma **SaaS multi-club** para clubes de inferiores / academias deporti
 El primer club (piloto) es **Jakare**. Cada club es un "inquilino" (tenant) con sus
 propios datos, usuarios, finanzas y comunicaciones, aislados de los demás clubes.
 
-**Stack propuesto**
-- **Backend / API:** Laravel (versión actual, 12.x) + Sanctum (tokens para la app) + colas (queues) para notificaciones.
-- **Panel web de administración** (comisión, tesorero, secretario): Laravel + Filament *(recomendado por velocidad)* o Flutter Web.
-- **App móvil** (padres, técnicos, comisión): Flutter (Android / iOS; también compilable a web).
-- **Notificaciones push:** Firebase Cloud Messaging (FCM). Email como respaldo. WhatsApp opcional a futuro.
-- **Archivos** (comprobantes, actas, fotos): almacenamiento S3 o compatible.
-- **Multi-tenancy:** una sola base de datos con `club_id` en cada tabla (más simple de operar al inicio).
-
-> Nota: este repositorio es *Laravue* (Laravel 7 + Vue, PHP 7.2), está desactualizado.
-> Recomendación: iniciar un proyecto Laravel 12 nuevo (en este repo o en uno nuevo) — a decidir.
+**Stack (igual que OpenSciRank, repositorio nuevo)**
+- **Backend:** Laravel 12 · PHP 8.2+ · MySQL 8.4 (dev) / MariaDB 11.8 (prod) · Laravel Sail (Docker) · colas en base de datos.
+- **Panel web (comisión, tesorería, secretaría, admin):** Filament 5 + Livewire 4 + Tailwind 4.
+- **Roles y permisos:** Filament Shield (spatie/laravel-permission).
+- **Auditoría:** spatie/laravel-activitylog. **PDF** (actas, recibos, balances): barryvdh/laravel-dompdf. **QR:** endroid/qr-code.
+- **Archivos:** S3 (aws-sdk). **Auth web:** Fortify.
+- **Calidad:** Pint + PHPUnit + GitHub Actions (lint.yml, tests.yml) + Dockerfile/compose de producción.
+- **Nuevo respecto a OpenSciRank:** Laravel Sanctum (API para la app) + Firebase Cloud Messaging (push).
+- **App:** Flutter — **un solo código para Android, iPhone y web**.
+  - Recomendación: la app Flutter para padres, técnicos y comisión "en movimiento"
+    (avisos, pagos, asistencia, aprobar); el panel Filament para el trabajo de escritorio
+    (actas, balances, carga masiva). Flutter web queda disponible, pero no reemplaza al panel.
+- **Documento maestro de negocio:** `business-logic.md` en la raíz del repo nuevo (como en OpenSciRank).
 
 ---
 
@@ -168,7 +171,10 @@ Una misma persona puede tener varios roles (ej.: un papá que es tesorero y adem
 ## 5. Modelo de datos (entidades principales)
 
 ```
-Club ─┬─ Temporada
+Club ─┬─ Temporada, ConfiguracionMora
+      ├─ Disciplina ── Categoria
+      ├─ Tarifa (concepto + categoría + temporada), ReglaDescuento, Beca
+      ├─ Familia ── Jugador ── Inscripcion (categoría + temporada)
       ├─ Usuario ── RolEnClub (cargo, alcance)
       ├─ Categoria ─┬─ Horario ── SesionEntrenamiento ── Asistencia
       │             └─ TecnicoCategoria
@@ -192,15 +198,15 @@ Club ─┬─ Temporada
 
 ### Fase 0 — Definiciones (ahora)
 - [ ] Validar este listado de funcionalidades.
-- [ ] Responder preguntas abiertas (sección 7).
+- [x] Responder preguntas abiertas (sección 7).
 - [ ] Decidir repositorio y estructura (API + panel + app).
 
 ### Fase 1 — MVP para Jakare (lo mínimo para usarlo de verdad)
-1. Proyecto Laravel 12 + auth (Sanctum) + multi-club + roles/permisos.
-2. Club, temporada, categorías, horarios.
+1. Repo nuevo con base OpenSciRank (Laravel 12, Filament 5, Sail) + Sanctum + multi-club + roles/permisos.
+2. Club, temporada, disciplinas, categorías, horarios.
 3. Jugadores, tutores, inscripción (carga por el club).
 4. Avisos segmentados + push FCM (app Flutter para padres: login, mis hijos, avisos).
-5. Finanzas básicas: cuentas, conceptos, cuota mensual automática, registro de pagos, gastos (incl. alquiler de cancha).
+5. Finanzas básicas: cuentas, tarifario por categoría, cuota mensual automática, descuentos/becas, mora, pagos, gastos (incl. alquiler de cancha).
 6. Informe básico: ingresos/egresos por mes y saldo por cuenta; lista de morosos.
 
 ### Fase 2 — Gestión institucional y deportiva
@@ -224,14 +230,78 @@ Club ─┬─ Temporada
 
 ---
 
-## 7. Preguntas abiertas (a decidir)
+## 7. Decisiones tomadas
 
-1. **País y moneda** (¿Paraguay / Guaraníes?) → define pasarela de pago y formato de montos.
-2. ¿La cuenta corriente se lleva **por jugador** o **por familia**?
-3. ¿Cuota mensual fija para todas las categorías o **distinta por categoría**?
-4. ¿Hay **descuento por hermanos** / becas? ¿Qué porcentajes?
-5. ¿Se cobra **recargo por mora**? ¿Día de vencimiento de la cuota?
-6. ¿Quiénes aprueban gastos y desde qué monto?
-7. ¿El panel de la comisión lo quieren en **web (Filament)** o todo en **Flutter**?
-8. ¿Nuevo repositorio o reutilizar este?
-9. Cantidad aproximada de jugadores, categorías y técnicos de Jakare (para dimensionar).
+| Tema | Decisión |
+|---|---|
+| País / moneda | **Paraguay, Guaraníes (PYG)** |
+| Cuenta corriente | **Por jugador, con vista consolidada por familia** |
+| Cuota | **Distinta por categoría**; preparado para **varias disciplinas** (fútbol hoy, pádel u otras después) |
+| Descuentos / becas | **Sí, configurables** |
+| Recargo por mora | **Configurable por club** |
+| Comisión | **Cada cargo es un rol** con permisos propios (presidente, tesorero, secretario…) |
+| App | **Flutter** (Android, iPhone, web) + panel **Filament** |
+| Repositorio | **Nuevo**, con la misma configuración técnica que OpenSciRank |
+
+## 8. Lógica de negocio derivada de las decisiones
+
+### 8.1 Guaraníes
+- Montos como **enteros** (el guaraní no usa decimales): `150000` → se muestra `₲ 150.000`.
+- Redondeos de descuentos y recargos al guaraní entero (configurable: a 500 o 1.000).
+- Zona horaria `America/Asuncion`, idioma español (Paraguay).
+- Pagos online (fase 4): **Bancard** (vPOS / QR) y/o **Pagopar**. Transferencias y giros (Tigo Money, Personal) como pago manual con comprobante.
+- Comprobantes: el club emite **recibos internos**. La factura electrónica (SIFEN) queda como opción futura.
+
+### 8.2 Disciplinas y categorías
+```
+Club → Disciplina (Fútbol, Pádel…) → Categoría/Grupo (Sub-8, Sub-10… / Pádel Inicial…) → Horarios
+```
+- **Inscripción** = jugador + categoría + temporada. Un jugador puede tener **varias inscripciones** (ej.: fútbol y pádel).
+- Cada inscripción genera sus propios cargos.
+- Criterio de categoría configurable por disciplina: por año de nacimiento (fútbol) o por nivel (pádel).
+
+### 8.3 Tarifario
+- **Tarifa** = concepto (inscripción, cuota mensual, torneo…) + categoría + temporada + monto + vigencia.
+- Un cambio de tarifa no altera cargos ya emitidos; aplica desde la fecha de vigencia.
+- La tarifa se puede aprobar mediante resolución de comisión (queda vinculada).
+
+### 8.4 Cuenta corriente por jugador y familia
+- Todo **cargo** pertenece a un **jugador** (y a su inscripción).
+- La **familia** agrupa jugadores y tutores; su saldo = suma de saldos de sus jugadores.
+- Un **pago** lo hace un tutor/familia y se **imputa** a cargos de uno o varios hijos
+  (por defecto, los más antiguos primero; el tesorero puede elegir).
+- Saldo a favor (pagó de más): queda como crédito de la familia y se aplica al próximo cargo.
+
+### 8.5 Descuentos y becas (configurables)
+- **Regla de descuento:** tipo (hermanos, beca, convenio, pronto pago, otro), porcentaje **o** monto fijo, conceptos a los que aplica, vigencia.
+- **Hermanos:** posición del hijo (2º, 3º…) → porcentaje, según las inscripciones activas de la familia.
+- **Beca:** asignada a un jugador (parcial % o total), con motivo, vigencia y **aprobación** (resolución o presidente + tesorero).
+- Orden de aplicación configurable; tope: el cargo nunca queda negativo.
+- El cargo guarda el **detalle**: monto base, descuentos aplicados y monto final (trazabilidad).
+
+### 8.6 Mora (configurable)
+- Parámetros por club (y opcionalmente por concepto): día de vencimiento, días de gracia, tipo de recargo (fijo / %), frecuencia (una vez / por mes), tope.
+- Se puede desactivar por completo, o exonerar un cargo puntual (con motivo y auditoría).
+- Recordatorios automáticos: X días antes del vencimiento, el día del vencimiento y cada N días de atraso.
+- Opcional: aviso al técnico o bloqueo de inscripción a torneos si hay deuda > N meses (configurable, nunca automático sin decisión del club).
+
+### 8.7 Roles de la comisión
+- Cada cargo (presidente, vice, secretario, pro-secretario, tesorero, pro-tesorero, vocal, síndico) es un **rol** con permisos editables (Filament Shield).
+- La asignación tiene **mandato** (desde / hasta): al vencer, el rol se desactiva solo.
+- Aprobaciones con reglas por rol: ej. gasto > umbral → tesorero **y** presidente; beca → presidente.
+- Una persona puede ser a la vez tutor y miembro de la comisión (la app muestra ambos perfiles).
+
+## 9. Próximos pasos
+
+1. Crear el repositorio nuevo (nombre sugerido: `clubes` o `jakare`) con la base de OpenSciRank:
+   Laravel 12 + Filament 5 + Sail + Pint + PHPUnit + GitHub Actions + Docker de producción.
+2. Escribir `business-logic.md` a partir de este plan.
+3. Migraciones y modelos de la **Fase 1**: clubes, disciplinas, categorías, jugadores, familias, tarifas, cargos, pagos, cuentas, gastos.
+4. Panel Filament para la tesorería y la secretaría.
+5. API con Sanctum y app Flutter para padres (login, mis hijos, estado de cuenta, avisos push).
+
+### Preguntas que quedan
+- Nombre del producto SaaS (y del repo nuevo).
+- Cantidad aproximada de jugadores, categorías y técnicos de Jakare.
+- ¿Los técnicos cobran del club? (si es así, agregamos "pagos a técnicos" como gasto recurrente).
+- ¿El alquiler de cancha es mensual fijo o por hora/uso?
